@@ -12,11 +12,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 let players = [];
 let readyPlayers = 0;
 
-const generateDeck = () => [
-    { name: 'Fogo', attack: 5 },
-    { name: 'Água', attack: 3 },
-    { name: 'Terra', attack: 4 },
-];
+const generateDeck = () => {
+  const cardTypes = [
+    { name: 'Fogo', img: '/imagens/fogo.png' },
+    { name: 'Água', img: '/imagens/agua.png' },
+    { name: 'Terra', img: '/imagens/terra.png' },
+  ];
+  return cardTypes.map(type => ({
+    name: type.name,
+    attack: Math.floor(Math.random() * 12) + 1,
+    image: type.img
+  }));
+};
 
 const gameState = {
     players: {},
@@ -38,10 +45,13 @@ wss.on('connection', (ws) => {
 
     const playerId = players.length;
     players.push(ws);
+    console.log(`Jogador ${playerId} conectado.`);
+
     gameState.players[playerId] = {
         deck: generateDeck(),
         selectedCard: null,
         score: 0,
+        wantsRestart: false
     };
 
     ws.send(JSON.stringify({ type: 'welcome', playerId, deck: gameState.players[playerId].deck }));
@@ -53,10 +63,10 @@ wss.on('connection', (ws) => {
     ws.on('message', (msg) => {
         const data = JSON.parse(msg);
 
-        // 🔄 Primeira verificação: tipo 'set-name'
         if (data.type === 'set-name') {
             gameState.names[playerId] = data.name;
             ws.send(JSON.stringify({ type: 'name-confirmed', playerId }));
+            console.log(`Jogador ${playerId} definiu nome como: ${data.name}`);
 
             if (Object.keys(gameState.names).length === 2) {
                 broadcast({
@@ -67,7 +77,6 @@ wss.on('connection', (ws) => {
             return;
         }
 
-        // 🔄 Segunda verificação: tipo 'play-card'
         if (data.type === 'play-card') {
             gameState.players[playerId].selectedCard = data.card;
             readyPlayers++;
@@ -90,6 +99,10 @@ wss.on('connection', (ws) => {
                     roundResult.winner = -1;
                 }
 
+                
+                p1.deck = p1.deck.filter(c => c.name !== p1.selectedCard.name);
+                p2.deck = p2.deck.filter(c => c.name !== p2.selectedCard.name);
+
                 gameState.rounds.push(roundResult);
                 readyPlayers = 0;
                 p1.selectedCard = null;
@@ -102,6 +115,14 @@ wss.on('connection', (ws) => {
                     names: gameState.names
                 });
 
+                
+                players.forEach((playerWs, i) => {
+                    playerWs.send(JSON.stringify({
+                        type: 'update-deck',
+                        deck: gameState.players[i].deck
+                    }));
+                });
+
                 if (gameState.rounds.length === 3) {
                     let winner = p1.score > p2.score ? 0 : (p2.score > p1.score ? 1 : -1);
                     broadcast({
@@ -109,16 +130,53 @@ wss.on('connection', (ws) => {
                         winner,
                         names: gameState.names
                     });
-
-                    players = [];
                 }
+            }
+        }
+
+        if (data.type === 'restart') {
+            console.log(`Jogador ${playerId} pediu para reiniciar`);
+            gameState.players[playerId].wantsRestart = true;
+
+            if (
+                gameState.players[0]?.wantsRestart &&
+                gameState.players[1]?.wantsRestart
+            ) {
+                console.log("Reiniciando partida...");
+                gameState.players[0] = {
+                    deck: generateDeck(),
+                    selectedCard: null,
+                    score: 0,
+                    wantsRestart: false
+                };
+                gameState.players[1] = {
+                    deck: generateDeck(),
+                    selectedCard: null,
+                    score: 0,
+                    wantsRestart: false
+                };
+                gameState.rounds = [];
+                readyPlayers = 0;
+
+                players.forEach((p, i) => {
+                    p.send(JSON.stringify({
+                        type: 'restart',
+                        deck: gameState.players[i].deck
+                    }));
+                });
             }
         }
     });
 
-
     ws.on('close', () => {
+        console.log(`Jogador ${playerId} desconectado.`);
         players = players.filter(p => p !== ws);
+        delete gameState.players[playerId];
+        delete gameState.names[playerId];
+        readyPlayers = 0;
+        gameState.rounds = [];
+
+        players.forEach(p => p.send(JSON.stringify({ type: 'opponent-disconnected' })));
     });
 });
 
