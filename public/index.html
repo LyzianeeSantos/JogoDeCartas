@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Batalha de Cartas</title>
+    <link rel="stylesheet" href="style.css">
+
+<body>
+    <h1>Jogo de Batalha de Cartas</h1>
+
+    <div id="nameInputContainer">
+        <input type="text" id="playerName" placeholder="Digite seu nome" />
+        <button onclick="sendName()">Entrar no jogo</button>
+    </div>
+
+    <div id="status" style="display:none;">Aguardando jogador...</div>
+    <div id="scoreboard" style="display:none;"></div>
+    <div id="cards"></div>
+    <div id="result"></div>
+
+    <script src="client.js"></script>
+</body>
+
+</html>
