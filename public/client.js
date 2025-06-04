@@ -1,4 +1,4 @@
-const socket = new WebSocket('ws://192.168.171.9:3000');
+const socket = new WebSocket('wss://192.168.171.9:3000');
 let playerId = null;
 let deck = [];
 let names = {};
