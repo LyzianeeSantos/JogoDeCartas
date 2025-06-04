@@ -7,11 +7,38 @@ body {
   text-align: center;
 }
 
-
 h1 {
   margin-top: 20px;
   font-size: 2.5rem;
   color: #f7c843;
+}
+
+
+#scoreboard {
+  margin: 20px auto 0;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #2e2e2e, #1c1c1c);
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #f7c843;
+  display: inline-block;
+  max-width: 600px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  color: #f0f0f0;
+  text-align: center;
+}
+
+#scoreboard h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: #f7c843;
+}
+
+#scoreboard p {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
 #status {
@@ -29,7 +56,6 @@ h1 {
 }
 
 
-/* Cartas */
 #cards {
   display: flex;
   flex-wrap: wrap;
@@ -40,7 +66,7 @@ h1 {
 }
 
 .card img {
-   width: 100%;
+  width: 100%;
   max-width: 150px;
   height: auto;
   object-fit: contain;
@@ -109,34 +135,6 @@ button {
 
 button:hover {
   background-color: #e6b800;
-}
-
-/* Placar */
-#scoreboard {
-  margin: 30px auto 0;
-  font-size: 1.1rem;
-  background: linear-gradient(135deg, #2e2e2e, #1c1c1c);
-  padding: 20px;
-  border-radius: 12px;
-  border: 2px solid #f7c843;
-  display: inline-block;
-  max-width: 600px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-  color: #f0f0f0;
-  text-align: center;
-}
-
-#scoreboard h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.5rem;
-  color: #f7c843;
-}
-
-#scoreboard p {
-  margin: 0;
-  font-weight: bold;
-  font-size: 1.2rem;
 }
 
 /* Responsivo */

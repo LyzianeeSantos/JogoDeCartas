@@ -11,6 +11,12 @@ const resultDiv = document.getElementById('result');
 const restartBtn = document.getElementById('restartBtn');
 const randomInfoDiv = document.getElementById('randomInfo');
 
+const specialCardsInfo = {
+  'Tempestade': 'Remove: 3 dano',
+  'Terremoto': 'Remove: 4 dano'
+};
+
+
 function sendName() {
   const name = document.getElementById('playerName').value.trim();
   if (name) {
@@ -38,22 +44,29 @@ socket.onmessage = (event) => {
   }
 
   if (msg.type === 'round-result') {
-    const { p1Card, p2Card, winner } = msg.data;
-    const scores = msg.scores;
-    names = msg.names;
+  const { p1Card, p2Card, winner } = msg.data;
+  const scores = msg.scores;
+  names = msg.names;
 
-    const myCard = playerId === 0 ? p1Card : p2Card;
-    const opponentCard = playerId === 0 ? p2Card : p1Card;
+  const myCard = playerId === 0 ? p1Card : p2Card;
+  const opponentCard = playerId === 0 ? p2Card : p1Card;
 
-    resultDiv.innerHTML = `
-      Rodada: Você jogou <b>${myCard.name}</b> (${myCard.attack})<br/>
-      Oponente jogou <b>${opponentCard.name}</b> (${opponentCard.attack})<br/>
-      ${winner === -1 ? "Empate!" : (winner === playerId ? "Você venceu a rodada!" : "Você perdeu a rodada.")} <br>
-      Jogue novamente
-    `;
-
-    updateScoreboard(scores[0], scores[1]);
+  let specialMsg = '';
+  const specialCards = ['Tempestade', 'Terremoto'];
+  if (specialCards.includes(p1Card.name) || specialCards.includes(p2Card.name)) {
+    specialMsg = '<br><i>(Cartas especiais reduziram o ataque do oponente!)</i>';
   }
+
+  resultDiv.innerHTML = `
+    Rodada: Você jogou <b>${myCard.name}</b> (${myCard.attack})<br/>
+    Oponente jogou <b>${opponentCard.name}</b> (${opponentCard.attack})<br/>
+    ${winner === -1 ? "Empate!" : (winner === playerId ? "Você venceu a rodada!" : "Você perdeu a rodada.")} 
+    ${specialMsg}<br>
+    Jogue novamente
+  `;
+
+  updateScoreboard(scores[0], scores[1]);
+}
 
   if (msg.type === 'update-deck') {
     deck = msg.deck;
@@ -92,21 +105,26 @@ socket.onmessage = (event) => {
     randomInfoDiv.style.display = 'none';
   }
 
-  if (msg.type === 'welcome') {
-    deck = msg.deck;
-    renderDeck();
-  }
+ if (msg.type === 'welcome') {
+  playerId = msg.playerId;  
+  deck = msg.deck;
+  renderDeck();
+}
 };
 
 function renderDeck() {
   cardsDiv.innerHTML = '';
   deck.forEach(card => {
+    const isSpecial = specialCardsInfo.hasOwnProperty(card.name);
+    const specialText = isSpecial ? `<br><small style="color:#f7c843;">${specialCardsInfo[card.name]}</small>` : '';
+
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
       <img src="${card.image}" alt="${card.name}" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 8px;" />
-      <b>${card.name}</b><br/>
+      <b>${card.name} ${isSpecial ? '(especial)' : ''}</b><br/>
       Ataque: ${card.attack}
+      ${specialText}
     `;
     div.onclick = () => {
       socket.send(JSON.stringify({ type: 'play-card', card }));
