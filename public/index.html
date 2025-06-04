@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="style.css">
 
 <body>
-    <h1>Jogo de Batalha de Cartas</h1>
+     <h1>Jogo de Batalha de Cartas</h1>
+
+    <div id="scoreboard" style="display:none;"></div>
 
     <div id="nameInputContainer">
         <input type="text" id="playerName" placeholder="Digite seu nome" />
@@ -15,12 +17,11 @@
     </div>
 
     <div id="status" style="display:none;">Aguardando jogador...</div>
-    <div id="scoreboard" style="display:none;"></div>
     <div id="cards"></div>
     <div id="result"></div>
     <button id="restartBtn" onclick="restartGame()" style="display: none;">Jogar Novamente</button>
 
-     <div id="randomInfo"></div>
+    <div id="randomInfo"></div>
 
     
     <script src="client.js"></script>
